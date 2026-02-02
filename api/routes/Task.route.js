@@ -1,12 +1,19 @@
 import express from 'express'
-import { createTask, deleteTask, getAllTask, showTask, updateTask } from '../controllers/Task.controller.js'
+
+console.log('Task.route.js loaded') // 🔴 IMPORTANT
 
 const Taskrouter = express.Router()
 
-Taskrouter.post('/create-task', createTask)
-Taskrouter.get('/get-all-task', getAllTask)
-Taskrouter.get('/show-task/:taskid', showTask)
-Taskrouter.put('/update-task/:taskid', updateTask)
-Taskrouter.delete('/delete-task/:taskid', deleteTask)
+Taskrouter.get('/', (req, res) => {
+  res.json({ message: 'Task router is working ✅' })
+})
+
+Taskrouter.post('/create-task', (req, res) => {
+  res.json({
+    message: 'Create task route hit ✅',
+    body: req.body
+  })
+})
 
 export default Taskrouter
+

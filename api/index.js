@@ -9,28 +9,28 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// middlewares
 app.use(express.json())
 app.use(cors())
 
-// health check route
+// 🔴 ADD THIS LOG
+console.log('Index.js loaded')
+
+// health route
 app.get('/', (req, res) => {
   res.send('Backend is running 🚀')
 })
 
-// routes
+// 🔴 ADD THIS LOG
+console.log('Mounting /api/task routes')
+
+// mount router
 app.use('/api/task', Taskrouter)
 
-// database + server start
-mongoose
-  .connect(process.env.MONGODB_CONN)
+mongoose.connect(process.env.MONGODB_CONN)
   .then(() => {
-    console.log('Database connected.')
-
+    console.log('Database connected')
     app.listen(PORT, () => {
-      console.log(`Server running on port: ${PORT}`)
+      console.log(`Server running on port ${PORT}`)
     })
   })
-  .catch((err) => {
-    console.error('Database connection failed.', err)
-  })
+  .catch(err => console.error(err))
