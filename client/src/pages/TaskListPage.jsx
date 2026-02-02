@@ -1,49 +1,74 @@
 import React, { useEffect, useState } from "react";
-import Badge from "../components/Badge";
-import { Link } from "react-router-dom";
 import Task from "../components/Task";
 import { showToast } from "../helper/showToast";
+
 const TaskListPage = () => {
-    const [referesh, setReferesh] = useState(false)
-    const [tasks, setTasks] = useState()
-    useEffect(() => {
-        setReferesh(false)
-        const getTask = async () => {
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/task/get-all-task`)
-            const responseData = await response.json()
-            setTasks(responseData)
-        }
-        getTask()
-    }, [referesh])
+  const [refresh, setRefresh] = useState(false);
+  const [tasks, setTasks] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    const deleteTask = async (taskid) => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/task/delete-task/${taskid}`, {
-                method: 'DELETE'
-            })
-            const responseData = await response.json()
-            if (!response.ok) {
-                throw new Error(responseData.message)
-            }
-            setReferesh(true)
-            showToast('success', responseData.message)
-        } catch (error) {
-            showToast('error', error.message)
+  useEffect(() => {
+    const getTask = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/task/get-all-task`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch tasks");
         }
+
+        const data = await response.json();
+
+        // ✅ safely set tasks
+        setTasks(data?.taskData || []);
+      } catch (error) {
+        showToast("error", error.message);
+        setTasks([]);
+      } finally {
+        setLoading(false);
+        setRefresh(false);
+      }
+    };
+
+    getTask();
+  }, [refresh]);
+
+  const deleteTask = async (taskid) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/task/delete-task/${taskid}`,
+        { method: "DELETE" }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      showToast("success", data.message);
+      setRefresh(true);
+    } catch (error) {
+      showToast("error", error.message);
     }
+  };
 
-    return (
-        <div className="pt-5">
-            <h1 className="text-2xl font-bold mb-5">My Tasks</h1>
+  if (loading) return <p>Loading...</p>;
 
-            {tasks && tasks.status ?
-                tasks.taskData.length > 0 ? tasks.taskData.map((task) => <Task key={task._id} props={task} onDelete={deleteTask} />) : <>0 Task.</>
-                :
-                <>Loading...</>
-            }
+  return (
+    <div className="pt-5">
+      <h1 className="text-2xl font-bold mb-5">My Tasks</h1>
 
-        </div>
-    );
+      {tasks.length > 0 ? (
+        tasks.map((task) => (
+          <Task key={task._id} props={task} onDelete={deleteTask} />
+        ))
+      ) : (
+        <p>No tasks found.</p>
+      )}
+    </div>
+  );
 };
 
 export default TaskListPage;
